@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class Triangle implements Shape {
+    private final static double EPSILON = 0.000001;
     private List<Vector3D> vertices;
     private Vector3D normal;
     private Material material;
@@ -30,32 +31,29 @@ public class Triangle implements Shape {
 
     @Override
     public Optional<Double> intersectionDistance(Ray ray) {
-        Vector3D A = vertices.get(1).sub(vertices.get(0));
-        Vector3D B = vertices.get(2).sub(vertices.get(0));
-        Vector3D normal = A.cross(B).normalize();
-        double D = normal.dot(vertices.get(0));
-        double t = (normal.dot(ray.getOrigin()) + D) / normal.dot(ray.getDirection());
-        if(t<0)
+        Vector3D e1, e2;  //Edge1, Edge2
+        Vector3D P, Q, T;
+        double det, inv_det, u, v;
+        double t;
+        e1 = vertices.get(1).sub(vertices.get(0));
+        e2 = vertices.get(2).sub(vertices.get(0));
+        P = ray.getDirection().cross(e2);
+        det = e1.dot(P);
+        if(det > -EPSILON && det < EPSILON)
             return Optional.empty();
-        Vector3D phit = ray.getOrigin().add(ray.getDirection().mul(t));
-        Vector3D c;
-        Vector3D edge0 = vertices.get(1).sub(vertices.get(0));
-        Vector3D vp0 = phit.sub(vertices.get(0));
-        c = edge0.cross(vp0);
-        if(normal.dot(c) < 0)
+        inv_det = 1 / det;
+        T = ray.getOrigin().sub(vertices.get(0));
+        u = T.dot(P) * inv_det;
+        if(u < 0 || u > 1)
             return Optional.empty();
-        Vector3D edge1 = vertices.get(2).sub(vertices.get(1));
-        Vector3D vp1 = phit.sub(vertices.get(1));
-        c = edge1.cross(vp1);
-        if(normal.dot(c) < 0)
+        Q = T.cross(e1);
+        v = ray.getDirection().dot(Q) * inv_det;
+        if(v < 0 || u + v  > 1)
             return Optional.empty();
-        Vector3D edge2 = vertices.get(0).sub(vertices.get(2));
-        Vector3D vp2     = phit.sub(vertices.get(2));
-        c = edge2.cross(vp2);
-        if(normal.dot(c) < 0)
-            return Optional.empty();
-        else
-            return Optional.of(phit.sub(ray.getOrigin()).length());
+        t = e2.dot(Q) * inv_det;
+        if(t > EPSILON)
+            return Optional.of(t);
+        return Optional.empty();
     }
 
     @Override
