@@ -20,7 +20,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class XMLInputFileParser {
@@ -168,10 +167,12 @@ public class XMLInputFileParser {
         return shapes;
     }
 
-    private static List<Triangle> getTriangle(Element element) {
+    private static List<Triangle> getTriangle(Element element) throws IOException {
         String fileName = element.getAttribute("name");
-        return Collections.emptyList();
-
+        List<Triangle> triangles = OBJInputFileParser.parseOBJ(new File(filePath).getParentFile() + "/" + fileName);
+        Material material = getMaterial(element);
+        triangles.forEach(t -> t.setMaterial(material));
+        return triangles;
     }
 
     private static Shape getSphere(Element element) throws IOException {

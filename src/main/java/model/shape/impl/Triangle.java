@@ -5,6 +5,7 @@ import model.Ray;
 import model.Vector3D;
 import model.shape.Shape;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,9 +14,17 @@ public class Triangle implements Shape {
     private Vector3D normal;
     private Material material;
 
-    public Triangle(List<Vector3D> vertices, Vector3D normal, Material material) {
-        this.vertices = vertices;
+    public Triangle() {}
+
+    public void setNormal(Vector3D normal) {
         this.normal = normal;
+    }
+
+    public void setVertices(List<Vector3D> vertices) {
+        this.vertices = vertices;
+    }
+
+    public void setMaterial(Material material) {
         this.material = material;
     }
 
@@ -51,7 +60,7 @@ public class Triangle implements Shape {
 
     @Override
     public Vector3D getNormal(Vector3D intersectionPoint) {
-        return null;
+        return normal;
     }
 
     @Override
@@ -59,4 +68,11 @@ public class Triangle implements Shape {
         return material;
     }
 
+    @Override
+    public String toString() {
+        return "\nTriangle\n [vertices: " + Arrays.toString(vertices.toArray())
+                + ",\n normal: " + normal
+                + ",\n material: " + material
+                + "]";
+    }
 }

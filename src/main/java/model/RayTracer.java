@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -122,7 +123,7 @@ public class RayTracer {
     @Override
     public String toString() {
         return path + "\n" +
-                shapes.toString() + "\n" +
+                Arrays.toString(shapes.toArray()) + "\n" +
                 lights.toString() + "\n" +
                 ambientLight.toString() + "\n" +
                 camera.toString() + "\n" +
