@@ -64,12 +64,12 @@ public class Vector3D {
         return new Vector3D(-x, -y, -z);
     }
 
+    public double[] getValues() {
+        return new double[] {x, y, z};
+    }
+
     @Override
     public String toString() {
         return Arrays.asList(x, y, z).toString();
-    }
-
-    public double[] getValues() {
-        return new double[] {x, y, z};
     }
 }
