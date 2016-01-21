@@ -1,5 +1,6 @@
 package model.shape.impl;
 
+import model.Color;
 import model.Material;
 import model.Ray;
 import model.Vector3D;
@@ -45,6 +46,16 @@ public class Sphere implements Shape {
     @Override
     public Material getMaterial() {
         return material;
+    }
+
+    @Override
+    public Color getColor(Vector3D intersectionPoint) {
+        if(material.getColor() == null) {
+            //TODO calculate texture pixel and call material.getTextureColor(x,y)
+            return new Color(0.1, 0.1, 0.1);
+        }
+        else
+            return material.getColor();
     }
 
 }

@@ -15,6 +15,7 @@ import java.util.Optional;
 
 public class RayTracer {
     private final static double EPSILON = 0.0001;
+    private final static double BIAS = 0.0001;
     private String path;
     private List<Shape> shapes;
     private List<Light> lights;
@@ -99,31 +100,32 @@ public class RayTracer {
                 return color;
             Color transmittanceColor = new Color(0,0,0);
             /*if(intersectedShape.getMaterial().getTransmittance() > 0) {
-                Ray transmittanceRay = new Ray(intersectionPoint, calculateTransmittanceDirection());
+                Vector3D dir = calculateTransmittanceDirection(ray, intersectionPoint, intersectedShape);
+                Ray transmittanceRay = new Ray(intersectionPoint.add(dir.mul(BIAS)), dir);
                 transmittanceColor = trace(transmittanceRay, depth + 1);
             }*/
             Color reflectanceColor = new Color(0,0,0);
             if(intersectedShape.getMaterial().getReflectance() > 0) {
-                Ray reflectanceRay = new Ray(intersectionPoint, calculateReflectanceDirection(ray.getDirection(), intersectionPoint, intersectedShape));
+                Vector3D dir = calculateReflectanceDirection(ray, intersectionPoint, intersectedShape);
+                Ray reflectanceRay = new Ray(intersectionPoint.add(dir.mul(BIAS)), dir);
                 reflectanceColor = trace(reflectanceRay, depth + 1);
             }
             return Color.parse(reflectanceColor.asVector().mul(intersectedShape.getMaterial().getReflectance())
-                    //.add(transmittanceColor.asVector().mul(intersectedShape.getMaterial().getTransmittance()))
-                    .add(color.asVector().mul(1-intersectedShape.getMaterial().getReflectance()/*-intersectedShape.getMaterial().getTransmittance()*/)));
+                    .add(transmittanceColor.asVector().mul(intersectedShape.getMaterial().getTransmittance()))
+                    .add(color.asVector().mul(1-intersectedShape.getMaterial().getReflectance()-intersectedShape.getMaterial().getTransmittance())));
         }
         else
             return backgroundColor;
 
     }
 
-    private Vector3D calculateReflectanceDirection(Vector3D direction, Vector3D intersectionPoint, Shape intersected) {
-        Vector3D negDirection = direction.neg();
+    private Vector3D calculateReflectanceDirection(Ray ray, Vector3D intersectionPoint, Shape intersected) {
+        Vector3D negDirection = ray.getDirection().neg();
         return negDirection.sub(intersected.getNormal(intersectionPoint)
-                .mul(negDirection.dot(intersected.getNormal(intersectionPoint))*2));
+                .mul(negDirection.dot(intersected.getNormal(intersectionPoint))*2)).normalize();
     }
 
-    private Vector3D calculateTransmittanceDirection() {
-        //TODO
+    private Vector3D calculateTransmittanceDirection(Ray ray, Vector3D intersectionPoint, Shape intersected) {
         return null;
     }
 
@@ -135,7 +137,7 @@ public class RayTracer {
         for(Shape shape : shapes) {
             if(shape.intersectionDistance(shadowRay).isPresent()) {
                 if(shape.intersectionDistance(shadowRay).get() > EPSILON)
-                intersectionTest = true;
+                    intersectionTest = true;
             }
         }
         if(intersectionTest) {
@@ -149,13 +151,13 @@ public class RayTracer {
                     .dot(ray.getDirection().neg());
             testSpecular = testSpecular >= 0 ? testSpecular : 0;
             Vector3D ambientComponent = light.getColor().asVector()
-                    .mul(intersected.getMaterial().getColor(intersectionPoint).asVector())
+                    .mul(intersected.getColor(intersectionPoint).asVector())
                     .mul(intersected.getMaterial().getPhongConstants().getValues()[0]
                             * intersected.getMaterial().getPhongConstants().getValues()[1]);
             Vector3D specularComponent = light.getColor().asVector()
                     .mul(intersected.getMaterial().getPhongConstants().getValues()[2])
                     .mul(Math.pow(testSpecular, intersected.getMaterial().getExponent()));
-            Vector3D diffuseComponent = intersected.getMaterial().getColor(intersectionPoint).asVector()
+            Vector3D diffuseComponent = intersected.getColor(intersectionPoint).asVector()
                     .mul(light.getColor().asVector())
                     .mul(testDiffuse)
                     .mul(intersected.getMaterial().getPhongConstants().getValues()[1]);

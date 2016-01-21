@@ -11,13 +11,8 @@ public class Material {
     private double transmittance;
     private double refraction;
 
-    public Color getColor(Vector3D intersectionPoint) {
-        if(color != null)
-            return color;
-        else {
-            //TODO parse TYPE_INT_ARGB to Color and calculate which pixel we need to take
-            return new Color(0.8, 0.8, 0.8);
-        }
+    public Color getColor() {
+        return color;
     }
 
     public void setColor(Color color) {
@@ -70,6 +65,14 @@ public class Material {
 
     public void setRefraction(double refraction) {
         this.refraction = refraction;
+    }
+
+    public Color getTextureColor(int x, int y) {
+        int rgb = texture.getRGB(x, y);
+        double red =   (rgb >> 16) & 0xFF;
+        double green = (rgb >>  8) & 0xFF;
+        double blue =  rgb & 0xFF;
+        return new Color(red/255, green/255, blue/255);
     }
 
     @Override

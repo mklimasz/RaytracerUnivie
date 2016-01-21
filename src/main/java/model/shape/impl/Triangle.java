@@ -1,5 +1,6 @@
 package model.shape.impl;
 
+import model.Color;
 import model.Material;
 import model.Ray;
 import model.Vector3D;
@@ -64,6 +65,21 @@ public class Triangle implements Shape {
     @Override
     public Material getMaterial() {
         return material;
+    }
+
+    @Override
+    public Color getColor(Vector3D intersectionPoint) {
+        if(material.getColor() == null) {
+            double edge1 = vertices.get(1).sub(vertices.get(0)).length();
+            int x = (int) (intersectionPoint.getValues()[0]/edge1*material.getTexture().getWidth());
+            double edge2 = vertices.get(2).sub(vertices.get(1)).length();
+            int y = (int) (intersectionPoint.getValues()[1]/edge2*material.getTexture().getHeight());
+            x = x < 0 ? -x : x;
+            y = y < 0 ? -y : y;
+            return material.getTextureColor(x, y);
+        }
+        else
+            return material.getColor();
     }
 
     @Override
