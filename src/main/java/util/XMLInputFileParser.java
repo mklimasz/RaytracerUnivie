@@ -7,10 +7,7 @@ import model.light.impl.PointLight;
 import model.shape.Shape;
 import model.shape.impl.Sphere;
 import model.shape.impl.Triangle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
@@ -188,10 +185,12 @@ public class XMLInputFileParser {
 
     private static Material getMaterial(Element element) throws IOException {
         Material material = new Material();
-        NodeList list = element.getElementsByTagName("material_solid").item(0).getChildNodes();
-        if(list == null) {
+        Node node =  element.getElementsByTagName("material_solid").item(0);
+        NodeList list;
+        if(node == null)
             list = element.getElementsByTagName("material_textured").item(0).getChildNodes();
-        }
+        else
+            list = node.getChildNodes();
         if(list.item(1).getAttributes().getNamedItem("r") != null) {
             double r = Double.parseDouble(list.item(1).getAttributes().getNamedItem("r").getTextContent());
             double g = Double.parseDouble(list.item(1).getAttributes().getNamedItem("g").getTextContent());

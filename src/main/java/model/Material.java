@@ -11,8 +11,13 @@ public class Material {
     private double transmittance;
     private double refraction;
 
-    public Color getColor() {
-        return color;
+    public Color getColor(Vector3D intersectionPoint) {
+        if(color != null)
+            return color;
+        else {
+            //TODO parse TYPE_INT_ARGB to Color and calculate which pixel we need to take
+            return new Color(0.8, 0.8, 0.8);
+        }
     }
 
     public void setColor(Color color) {
@@ -69,7 +74,12 @@ public class Material {
 
     @Override
     public String toString() {
-        return "Material:\n Color: " + color.toString() +
+        String colorOrTexture;
+        if(color == null)
+            colorOrTexture = texture.toString();
+        else
+            colorOrTexture = color.toString();
+        return "Material:\n Color/Texture: " + colorOrTexture +
                 "\n PhongConsts: " + phongConstants.toString() +
                 "\n Exponent: " + exponent +
                 "\n Reflectance: " + reflectance +
