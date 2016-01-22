@@ -22,10 +22,11 @@ public class OBJInputFileParser {
         InputStream inputStream = new FileInputStream(path);
         List<Vector3D> vertices = new ArrayList<>();
         List<Vector3D> normals = new ArrayList<>();
+        List<Vector3D> coords = new ArrayList<>();
         List<String> lines = Arrays.asList(IOUtils.toString(inputStream, Charset.defaultCharset()).split("\\r?\\n"));
         lines.stream()
                 .filter(l -> new Character('v').equals(l.charAt(0)))
-                .forEach(l -> parseVerticesLine(l, vertices, normals));
+                .forEach(l -> parseVerticesLine(l, vertices, normals, coords));
         normals.forEach(n -> {
             Triangle t1 = new Triangle();
             t1.setNormal(n);
@@ -45,11 +46,29 @@ public class OBJInputFileParser {
                     tmp, vertices.get(j++), vertices.get(j++)
             ));
         }
+        for (int i = 0, j = 0; i < triangleList.size(); i++) {
+            triangleList.get(i++).setTextureCoords(Arrays.asList(
+                    coords.get(j++), coords.get(j++), coords.get(j--)
+            ));
+            j--;
+            Vector3D tmp = coords.get(j++);
+            j++;
+            triangleList.get(i).setTextureCoords(Arrays.asList(
+                    tmp, coords.get(j++), coords.get(j++)
+            ));
+        }
         return triangleList;
     }
 
-    private static void parseVerticesLine(String line, List<Vector3D> vertices, List<Vector3D> normals) {
-        if(new Character('t').equals(line.charAt(1))) {}
+    private static void parseVerticesLine(String line, List<Vector3D> vertices, List<Vector3D> normals, List<Vector3D> coords) {
+        if(new Character('t').equals(line.charAt(1))) {
+            String[] split = line.split(" ");
+            coords.add(new Vector3D(
+                    Double.valueOf(split[1]),
+                    Double.valueOf(split[2]),
+                    0
+            ));
+        }
         else if(new Character('n').equals(line.charAt(1))) {
             String[] split = line.split(" ");
             normals.add(new Vector3D(

@@ -13,6 +13,7 @@ import java.util.Optional;
 public class Triangle implements Shape {
     private final static double EPSILON = 0.000001;
     private List<Vector3D> vertices;
+    private List<Vector3D> textureCoords;
     private Vector3D normal;
     private Material material;
 
@@ -28,6 +29,14 @@ public class Triangle implements Shape {
 
     public void setMaterial(Material material) {
         this.material = material;
+    }
+
+    public List<Vector3D> getTextureCoords() {
+        return textureCoords;
+    }
+
+    public void setTextureCoords(List<Vector3D> textureCoords) {
+        this.textureCoords = textureCoords;
     }
 
     @Override
@@ -70,13 +79,15 @@ public class Triangle implements Shape {
     @Override
     public Color getColor(Vector3D intersectionPoint) {
         if(material.getColor() == null) {
-            double edge1 = vertices.get(1).sub(vertices.get(0)).length();
-            int x = (int) (intersectionPoint.getValues()[0]/edge1*material.getTexture().getWidth());
-            double edge2 = vertices.get(2).sub(vertices.get(1)).length();
-            int y = (int) (intersectionPoint.getValues()[1]/edge2*material.getTexture().getHeight());
-            x = x < 0 ? -x : x;
-            y = y < 0 ? -y : y;
-            return material.getTextureColor(x, y);
+            double d1 = intersectionPoint.sub(vertices.get(0)).length();
+            double d2 = intersectionPoint.sub(vertices.get(1)).length();
+            double d3 = intersectionPoint.sub(vertices.get(2)).length();
+            double r1 = (1/d1) / ((1/d1) + (1/d2) + (1/d3));
+            double r2 = (1/d2) / ((1/d1) + (1/d2) + (1/d3));
+            double r3 = (1/d3) / ((1/d1) + (1/d2) + (1/d3));
+            double x = (r1 * textureCoords.get(0).getValues()[0]) + (r2 * textureCoords.get(1).getValues()[0]) + (r3 * textureCoords.get(2).getValues()[0]);
+            double y = (r1 * textureCoords.get(0).getValues()[1]) + (r2 * textureCoords.get(1).getValues()[1]) + (r3 * textureCoords.get(2).getValues()[1]);
+            return material.getTextureColor((int) (x*material.getTexture().getWidth()), (int) (y*material.getTexture().getHeight()));
         }
         else
             return material.getColor();
@@ -85,8 +96,10 @@ public class Triangle implements Shape {
     @Override
     public String toString() {
         return "\nTriangle\n [vertices: " + Arrays.toString(vertices.toArray())
+                + ",\n texture coords:" + Arrays.toString(textureCoords.toArray())
                 + ",\n normal: " + normal
                 + ",\n material: " + material
                 + "]";
     }
+
 }
