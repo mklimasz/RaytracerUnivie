@@ -41,7 +41,7 @@ public class Triangle implements Shape {
 
     @Override
     public OptionalDouble intersectionDistance(Ray ray) {
-        Vector3D e1, e2;  //Edge1, Edge2
+        Vector3D e1, e2;
         Vector3D P, Q, T;
         double det, inv_det, u, v;
         double t;
@@ -61,9 +61,7 @@ public class Triangle implements Shape {
         if(v < 0 || u + v  > 1)
             return OptionalDouble.empty();
         t = e2.dot(Q) * inv_det;
-        if(t > EPSILON)
-            return OptionalDouble.of(t);
-        return OptionalDouble.empty();
+        return OptionalDouble.of(t);
     }
 
     @Override

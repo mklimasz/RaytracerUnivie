@@ -99,11 +99,11 @@ public class RayTracer {
             if(depth >= camera.getMaxBounces())
                 return color;
             Color transmittanceColor = new Color(0,0,0);
-            /*if(intersectedShape.getMaterial().getTransmittance() > 0) {
+            if(intersectedShape.getMaterial().getTransmittance() > 0) {
                 Vector3D dir = calculateTransmittanceDirection(ray, intersectionPoint, intersectedShape);
                 Ray transmittanceRay = new Ray(intersectionPoint.add(dir.mul(BIAS)), dir);
                 transmittanceColor = trace(transmittanceRay, depth + 1);
-            }*/
+            }
             Color reflectanceColor = new Color(0,0,0);
             if(intersectedShape.getMaterial().getReflectance() > 0) {
                 Vector3D dir = calculateReflectanceDirection(ray, intersectionPoint, intersectedShape);
@@ -111,8 +111,8 @@ public class RayTracer {
                 reflectanceColor = trace(reflectanceRay, depth + 1);
             }
             return Color.parse(reflectanceColor.asVector().mul(intersectedShape.getMaterial().getReflectance())
-                    //.add(transmittanceColor.asVector().mul(intersectedShape.getMaterial().getTransmittance()))
-                    .add(color.asVector().mul(1-intersectedShape.getMaterial().getReflectance())));//-intersectedShape.getMaterial().getTransmittance())));
+                    .add(transmittanceColor.asVector().mul(intersectedShape.getMaterial().getTransmittance()))
+                    .add(color.asVector().mul(1-intersectedShape.getMaterial().getReflectance()-intersectedShape.getMaterial().getTransmittance())));
         }
         else
             return backgroundColor;
@@ -126,7 +126,10 @@ public class RayTracer {
     }
 
     private Vector3D calculateTransmittanceDirection(Ray ray, Vector3D intersectionPoint, Shape intersected) {
-        return null;
+        double incomingAngleCos = intersected.getNormal(intersectionPoint).dot(ray.getDirection());
+        double outgoingAngleCos = Math.sqrt(1 - Math.pow(intersected.getMaterial().getTransmittance(), 2) * (1 - Math.pow(incomingAngleCos, 2)));
+        return ray.getDirection().neg().mul(intersected.getMaterial().getTransmittance())
+                .add(intersected.getNormal(intersectionPoint).mul(intersected.getMaterial().getTransmittance()*incomingAngleCos - outgoingAngleCos));
     }
 
     private Color shadow(Ray ray, Shape intersected, Vector3D intersectionPoint, Vector3D normal, Light light) {
