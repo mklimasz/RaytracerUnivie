@@ -8,7 +8,7 @@ import model.shape.Shape;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class Triangle implements Shape {
     private final static double EPSILON = 0.000001;
@@ -40,7 +40,7 @@ public class Triangle implements Shape {
     }
 
     @Override
-    public Optional<Double> intersectionDistance(Ray ray) {
+    public OptionalDouble intersectionDistance(Ray ray) {
         Vector3D e1, e2;  //Edge1, Edge2
         Vector3D P, Q, T;
         double det, inv_det, u, v;
@@ -50,20 +50,20 @@ public class Triangle implements Shape {
         P = ray.getDirection().cross(e2);
         det = e1.dot(P);
         if(det > -EPSILON && det < EPSILON)
-            return Optional.empty();
+            return OptionalDouble.empty();
         inv_det = 1 / det;
         T = ray.getOrigin().sub(vertices.get(0));
         u = T.dot(P) * inv_det;
         if(u < 0 || u > 1)
-            return Optional.empty();
+            return OptionalDouble.empty();
         Q = T.cross(e1);
         v = ray.getDirection().dot(Q) * inv_det;
         if(v < 0 || u + v  > 1)
-            return Optional.empty();
+            return OptionalDouble.empty();
         t = e2.dot(Q) * inv_det;
         if(t > EPSILON)
-            return Optional.of(t);
-        return Optional.empty();
+            return OptionalDouble.of(t);
+        return OptionalDouble.empty();
     }
 
     @Override

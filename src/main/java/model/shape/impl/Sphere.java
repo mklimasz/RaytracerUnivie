@@ -6,7 +6,7 @@ import model.Ray;
 import model.Vector3D;
 import model.shape.Shape;
 
-import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class Sphere implements Shape {
     private double radius;
@@ -20,7 +20,7 @@ public class Sphere implements Shape {
     }
 
     @Override
-    public Optional<Double> intersectionDistance(Ray ray) {
+    public OptionalDouble intersectionDistance(Ray ray) {
         double A, B, C, dirc, dircSqrt, t0 = Double.MAX_VALUE, t1;
         B = 2*ray.getDirection().dot(ray.getOrigin().sub(position));
         A = ray.getDirection().dot(ray.getDirection());
@@ -33,9 +33,9 @@ public class Sphere implements Shape {
             t0 = t0 < t1 ? t0 : t1;
         }
         if(t0 == Double.MAX_VALUE)
-            return Optional.empty();
+            return OptionalDouble.empty();
         else
-            return Optional.of(t0);
+            return OptionalDouble.of(t0);
     }
 
     @Override

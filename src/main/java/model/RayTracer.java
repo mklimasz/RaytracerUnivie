@@ -11,11 +11,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class RayTracer {
     private final static double EPSILON = 0.0001;
-    private final static double BIAS = 0.0001;
+    private final static double BIAS = 0.001;
     private String path;
     private List<Shape> shapes;
     private List<Light> lights;
@@ -79,17 +79,17 @@ public class RayTracer {
     }
 
     private Color trace(Ray ray, int depth) {
-        Optional<Double> distance = Optional.of(Double.MAX_VALUE);
+        OptionalDouble distance = OptionalDouble.of(Double.MAX_VALUE);
         Shape intersectedShape = null;
         for(Shape shape : shapes) {
-            Optional<Double> currentDistance = shape.intersectionDistance(ray);
-            if(currentDistance.isPresent() && currentDistance.get() < distance.get()) {
+            OptionalDouble currentDistance = shape.intersectionDistance(ray);
+            if(currentDistance.isPresent() && currentDistance.getAsDouble() < distance.getAsDouble()) {
                 distance = currentDistance;
                 intersectedShape = shape;
             }
         }
         if(intersectedShape != null) {
-            Vector3D intersectionPoint = ray.getOrigin().add(ray.getDirection().mul(distance.get()));
+            Vector3D intersectionPoint = ray.getOrigin().add(ray.getDirection().mul(distance.getAsDouble()));
             Vector3D normal = intersectedShape.getNormal(intersectionPoint);
             Color color = new Color(0,0,0);
             for(Light light : lights) {
@@ -111,8 +111,8 @@ public class RayTracer {
                 reflectanceColor = trace(reflectanceRay, depth + 1);
             }
             return Color.parse(reflectanceColor.asVector().mul(intersectedShape.getMaterial().getReflectance())
-                    .add(transmittanceColor.asVector().mul(intersectedShape.getMaterial().getTransmittance()))
-                    .add(color.asVector().mul(1-intersectedShape.getMaterial().getReflectance()-intersectedShape.getMaterial().getTransmittance())));
+                    //.add(transmittanceColor.asVector().mul(intersectedShape.getMaterial().getTransmittance()))
+                    .add(color.asVector().mul(1-intersectedShape.getMaterial().getReflectance())));//-intersectedShape.getMaterial().getTransmittance())));
         }
         else
             return backgroundColor;
@@ -120,7 +120,7 @@ public class RayTracer {
     }
 
     private Vector3D calculateReflectanceDirection(Ray ray, Vector3D intersectionPoint, Shape intersected) {
-        Vector3D negDirection = ray.getDirection().neg();
+        Vector3D negDirection = ray.getDirection().neg().normalize();
         return negDirection.sub(intersected.getNormal(intersectionPoint)
                 .mul(negDirection.dot(intersected.getNormal(intersectionPoint))*2)).normalize();
     }
@@ -132,11 +132,12 @@ public class RayTracer {
     private Color shadow(Ray ray, Shape intersected, Vector3D intersectionPoint, Vector3D normal, Light light) {
         Vector3D toLight = light.getDirection(intersectionPoint.getValues()[0], intersectionPoint.getValues()[1], intersectionPoint.getValues()[2])
                 .neg().normalize();
-        Ray shadowRay = new Ray(intersectionPoint, toLight);
+        Ray shadowRay = new Ray(intersectionPoint.add(toLight.mul(BIAS)), toLight);
         boolean intersectionTest = false;
         for(Shape shape : shapes) {
-            if(shape.intersectionDistance(shadowRay).isPresent()) {
-                if(shape.intersectionDistance(shadowRay).get() > EPSILON)
+            OptionalDouble intersectionDistance = shape.intersectionDistance(shadowRay);
+            if(intersectionDistance.isPresent()) {
+                if(intersectionDistance.getAsDouble() > EPSILON)
                     intersectionTest = true;
             }
         }
